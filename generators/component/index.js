@@ -115,6 +115,27 @@ ${chalk.blue('Make sure you\'re running this command from your theme root.')}`
       type: 'confirm',
       message: 'Would you like to include a Markdown file?',
       default: false
+    },{
+      name: 'componentType',
+      type: 'list',
+      message: 'What type of component is this? (Choose one)',
+      choices: [
+        {
+          name: 'Atom',
+          value: 'atoms',
+          short: 'Atom'
+        },
+        {
+          name: 'Molecule',
+          value: 'molecules',
+          short: 'Molecule'
+        },
+        {
+          name: 'Organism',
+          value: 'organisms',
+          short: 'Organism'
+        },
+      ]
     }];
 
     return this.prompt(prompts).then(function (props) {
@@ -131,6 +152,9 @@ ${chalk.blue('Make sure you\'re running this command from your theme root.')}`
       this.includeJS = props.includeJSBehavior;
       // See if we need to include a Markdown file.
       this.includeMarkdown = props.includeMarkdown;
+
+      // Set the component type.
+      this.componentType = props.componentType || '';
 
       // To access props later use this.props.someAnswer;
       this.props = props;
@@ -196,10 +220,12 @@ ${chalk.blue('Make sure you\'re running this command from your theme root.')}`
 
     // Write each file the component needs, adding the component
     // name where needed.
+    const componentDir = this.componentType ? this.componentType + '/' : '';
+    const componentPath = `src/patterns/components/${componentDir}${this.componentName.dashed}`;
     this.fs.copyTpl(
       this.templatePath('_component/_component.json'),
       // eslint-disable-next-line max-len
-      this.destinationPath('src/patterns/components/' + this.componentName.dashed + '/' + this.componentName.dashed + '.json'),
+      this.destinationPath(componentPath + '/' + this.componentName.dashed + '.json'),
       {
         name: this.componentName.raw,
         dashed: this.componentName.dashed
@@ -208,16 +234,17 @@ ${chalk.blue('Make sure you\'re running this command from your theme root.')}`
     this.fs.copyTpl(
       this.templatePath('_component/_component.scss'),
       // eslint-disable-next-line max-len
-      this.destinationPath('src/patterns/components/' + this.componentName.dashed + '/' + this.componentName.dashed + '.scss'),
+      this.destinationPath(componentPath + '/' + this.componentName.dashed + '.scss'),
       {
         name: this.componentName.raw,
-        dashed: this.componentName.dashed
+        dashed: this.componentName.dashed,
+        pathNested: this.componentType ? '../' : ''
       }
     );
     this.fs.copyTpl(
       this.templatePath('_component/_component.twig'),
       // eslint-disable-next-line max-len
-      this.destinationPath('src/patterns/components/' + this.componentName.dashed + '/' + this.componentName.dashed + '.twig'),
+      this.destinationPath(componentPath + '/' + this.componentName.dashed + '.twig'),
       {
         dashed: this.componentName.dashed,
         themeNameMachine: this.themeNameMachine
@@ -227,7 +254,7 @@ ${chalk.blue('Make sure you\'re running this command from your theme root.')}`
       this.fs.copyTpl(
         this.templatePath('_component/_component.ejs'),
         // eslint-disable-next-line max-len
-        this.destinationPath('src/patterns/components/' + this.componentName.dashed + '/' + this.componentName.dashed + '.js'),
+        this.destinationPath(componentPath + '/' + this.componentName.dashed + '.js'),
         {
           camel: _.camelCase(this.componentName.raw),
           dashed: this.componentName.dashed,
@@ -239,7 +266,7 @@ ${chalk.blue('Make sure you\'re running this command from your theme root.')}`
       this.fs.copyTpl(
         this.templatePath('_component/_component.md'),
         // eslint-disable-next-line max-len
-        this.destinationPath('src/patterns/components/' + this.componentName.dashed + '/' + this.componentName.dashed + '.md'),
+        this.destinationPath(componentPath + '/' + this.componentName.dashed + '.md'),
         {
           name: this.componentName.raw,
           dashed: this.componentName.dashed
